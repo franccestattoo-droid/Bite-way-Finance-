@@ -1,0 +1,53 @@
+name: Extract Bite Way Finance ZIP
+
+on:
+  push:
+    paths:
+      - "Bite-Way-Finance-estrutura-correta.zip"
+
+permissions:
+  contents: write
+
+jobs:
+  extract-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Extract project ZIP safely
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          archive = Path("Bite-Way-Finance-estrutura-correta.zip")
+          if not archive.is_file():
+              raise SystemExit("Project ZIP was not found.")
+
+          with ZipFile(archive) as zf:
+              for item in zf.infolist():
+                  path = Path(item.filename)
+                  if path.is_absolute() or ".." in path.parts:
+                      raise SystemExit(f"Unsafe path in ZIP: {item.filename}")
+                  if item.is_dir():
+                      continue
+                  target = Path(".") / path
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(zf.read(item))
+
+          print("ZIP extracted successfully.")
+          PY
+
+      - name: Commit extracted project files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Extract Bite Way Finance project"
+            git push origin HEAD:main
+          fi
