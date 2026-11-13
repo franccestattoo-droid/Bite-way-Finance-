@@ -1,0 +1,34 @@
+name: Restore Bite Way Finance
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Bite-Way-Finance-estrutura-correta.zip'
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          mkdir -p /tmp/bite-way-finance
+          unzip -q Bite-Way-Finance-estrutura-correta.zip -d /tmp/bite-way-finance
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            /tmp/bite-way-finance/ ./
+          rm -f Bite-Way-Finance-estrutura-correta.zip
+
+      - name: Commit extracted project
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Restore Bite Way Finance project"
+          git push
