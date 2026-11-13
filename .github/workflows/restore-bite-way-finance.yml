@@ -23,7 +23,7 @@ jobs:
             --exclude='.git/' \
             --exclude='.github/' \
             /tmp/bite-way-finance/ ./
-          rm Bite-Way-Finance-estrutura-correta.zip
+          rm -f Bite-Way-Finance-estrutura-correta.zip
 
       - name: Commit extracted project
         run: |
